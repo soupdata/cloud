@@ -1,0 +1,112 @@
+
+server:
+  port: 2048
+  use-forward-headers: true
+  tomcat:
+    remote_ip_header: x-forwarded-for
+    protocol_header: x-forwarded-proto
+    port-header: X-Forwarded-Port
+
+#management:
+#  security:
+#    enabled: false
+
+endpoints:
+  restart:
+    enabled: true
+
+integration:
+  analytics:
+    uri: http://localhost:8081
+    test: '{cipher}316f8cdbb776c23e679bf209014788a6eab7522f48f97114328c2c9388e6b3c1'
+
+analytics:
+  ribbon:
+    ServerListRefreshInterval: 1000
+
+eureka:
+  instance:
+    leaseRenewalIntervalInSeconds: 10
+    metadataMap:
+      instanceId: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${server.port}}}
+  client:
+    region: default
+    registryFetchIntervalSeconds: 5
+    availabilityZones:
+      default: ${APPLICATION_DOMAIN:${DOMAIN:defaultZone}}
+    service-url:
+      defaultZone : http://localhost:8761/eureka/  #注册到Eureka Server
+#    register-with-eureka: false
+#    fetch-registry: false
+
+# For demo only allow more hystrix connections
+hystrix:
+  stream:
+    maxConcurrentConnections: 20
+    bus:
+      enabled: true
+
+logging:
+  level:
+    com.netflix.discovery: fatal
+
+spring:
+  profiles: phoenix
+
+  data:
+    rest.base-path: /api
+    jpa:
+      repositories:
+        enabled: true
+
+  rabbitmq:
+    addresses: ${vcap.services.${PREFIX:}rabbitmq.credentials.uri:amqp://${RABBITMQ_HOST:localhost}:${RABBITMQ_PORT:5672}}
+
+  # 为 spring.datasource 前缀的属性自动配置 datasource
+  datasource:
+    name: phoenix
+    username: ''
+    password: ''
+    url: ${phoenix.url}
+    driver-class-name: org.apache.phoenix.jdbc.PhoenixDriver
+
+    hikari:
+      data-source-properties:
+        phoenix.functions.allowUserDefinedFunctions: ${phoenix.functions.allowUserDefinedFunctions}
+        phoenix.schema.isNamespaceMappingEnabled: ${phoenix.schema.isNamespaceMappingEnabled}
+        fs.hdfs.impl: ${phoenix.fs.hdfs.impl}
+        hbase.rootdir: ${phoenix.hbase.rootdir}
+        hbase.dynamic.jars.dir: ${phoenix.hbase.dynamic.jars.dir}
+
+  jta:
+    enabled: true
+    transaction-manager-id: 1
+
+  jpa:
+    jackson:
+      serialization.indent_output: true
+
+    database: MYSQL
+    database-platform: com.godalgo.inspirer.cloud.analytics.DialectSupportArrayType
+    show-sql: true
+#    如果开启会映射数据库表信息
+    generate-ddl: false
+
+    hibernate:
+      ddl-auto: none
+
+
+  transaction:
+    rollback-on-commit-failure: true
+
+
+phoenix:
+  url: jdbc:phoenix:master,slave1,slave2:2181:/hbase
+  driver: org.apache.phoenix.jdbc.PhoenixDriver
+  fs.hdfs.impl: org.apache.hadoop.hdfs.DistributedFileSystem
+  functions.allowUserDefinedFunctions: true
+  schema.isNamespaceMappingEnabled: true
+  hbase:
+    rootdir: hdfs://master:9000/hbase
+    dynamic.jars.dir: ${phoenix.hbase.rootdir}/lib
+

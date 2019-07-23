@@ -1,0 +1,17 @@
+
+spring:
+  application:
+    name: analytics
+  cloud:
+    config:
+      name: analytics
+#      label: master
+      uri: ${CONFIG_SERVER_URI:${vcap.services.${PREFIX:}configserver.credentials.uri:http://user:password@localhost:8763}}
+encrypt:
+  failOnError: false
+
+
+#zuul.routes:
+#  books.url: http://localhost:9000
+
+     

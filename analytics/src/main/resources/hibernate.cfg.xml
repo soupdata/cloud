@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<!-- 为手动调用事务提供支撑 -->
+<hibernate-configuration>
+    <session-factory>
+        <!-- 启动Hibernate时，重建数据库 create；更新数据库 update -->
+        <property name="hbm2ddl.auto">none</property>
+        <!--显示执行的SQL语句-->
+        <property name="show_sql">true</property>
+        <!-- 数据库方言 -->
+        <property name="dialect">com.godalgo.inspirer.cloud.analytics.DialectSupportArrayType</property>
+        <property name="connection.driver_class">org.apache.phoenix.jdbc.PhoenixDriver</property>
+        <property name="connection.url">jdbc:phoenix:master,slave1,slave2:2181:/hbase</property>
+
+
+        <!-- JDBC连接池（使用内置的连接池）-->
+        <property name="connection.pool_size">5</property>
+        <!-- 每次从数据库中取出，并放到JDBC的Statment中的记录条数，fetch_size设的越大，读取数据库的次数会越小，速度越快，但消耗更多内存 -->
+        <property name="jdbc.fetch_size">1000</property>
+        <!-- 批量插入、删除和更新时，每次操作的记录数，batch_size越大，向数据库发送SQL语句的次数越少，速度越快，但消耗更多内存 -->
+        <property name="jdbc.batch_size">1000</property>
+        <!-- Hibernate自动管理上下文的策略 -->
+        <property name="current_session_context_class">thread</property>
+
+        <property name="connection.provider_class">org.hibernate.hikaricp.internal.HikariCPConnectionProvider</property>
+        <!--<property name="connection.provider_class">com.zaxxer.hikari.hibernate.HikariConnectionProvider</property>-->
+        <property name="hikari.dataSource.phoenix.functions.allowUserDefinedFunctions">true</property>
+        <property name="hikari.dataSource.phoenix.schema.isNamespaceMappingEnabled">true</property>
+        <property name="hikari.dataSource.fs.hdfs.impl">org.apache.hadoop.hdfs.DistributedFileSystem</property>
+        <property name="hikari.dataSource.functions.allowUserDefinedFunctions">org.apache.hadoop.hdfs.DistributedFileSystem</property>
+        <property name="hikari.dataSource.hbase.rootdir">hdfs://master:9000/hbase</property>
+        <property name="hikari.dataSource.dynamic.jars.dir">hdfs://master:9000/hbase/lib</property>
+
+    </session-factory>
+</hibernate-configuration>
